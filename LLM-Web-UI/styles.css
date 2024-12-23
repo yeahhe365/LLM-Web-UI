@@ -1,0 +1,844 @@
+/* 全局样式初始化 */
+*, *::before, *::after {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+html, body {
+    height: 100%;
+    overflow: hidden; /* 防止出现滚动条 */
+    background-color: var(--bg-color);
+    transition: background-color 0.3s, color 0.3s, font-size 0.3s;
+    font-size: var(--font-size);
+}
+body {
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    flex-direction: column;
+    color: var(--text-color);
+}
+/* 主题变量 - 默认明亮模式 */
+:root {
+    --bg-color: #f0f2f5;
+    --text-color: #333;
+    --header-bg: linear-gradient(to right, #4CAF50, #81C784);
+    --user-msg-bg: #DCF8C6;
+    --bot-msg-bg: #FFFFFF;
+    --input-bg: #ffffff;
+    --button-bg: #4CAF50;
+    --button-hover-bg: #45a049;
+    --clear-button-bg: #f44336;
+    --clear-button-hover-bg: #d32f2f;
+    --scrollbar-track: #f1f1f1;
+    --scrollbar-thumb: #888;
+    --scrollbar-thumb-hover: #555;
+    --font-size: 16px;
+    --modal-bg: rgba(0, 0, 0, 0.5);
+    --toast-bg: #333;
+    --toast-text: #fff;
+    --code-copy-bg: rgba(255, 255, 255, 0.8);
+    --code-copy-hover-bg: rgba(255, 255, 255, 1);
+    --code-copy-color: #555;
+}
+/* 暗色模式 */
+.dark-mode {
+    --bg-color: #121212;
+    --text-color: #e0e0e0;
+    --header-bg: linear-gradient(to right, #333, #555);
+    --user-msg-bg: #2a2f32;
+    --bot-msg-bg: #1e1e1e;
+    --input-bg: #2a2a2a;
+    --button-bg: #4CAF50;
+    --button-hover-bg: #45a049;
+    --clear-button-bg: #f44336;
+    --clear-button-hover-bg: #d32f2f;
+    --scrollbar-track: #2a2a2a;
+    --scrollbar-thumb: #555;
+    --scrollbar-thumb-hover: #777;
+    --modal-bg: rgba(255, 255, 255, 0.1);
+    --toast-bg: #fff;
+    --toast-text: #333;
+    --code-copy-bg: rgba(0, 0, 0, 0.6);
+    --code-copy-hover-bg: rgba(0, 0, 0, 0.8);
+    --code-copy-color: #e0e0e0;
+}
+/* 顶部栏样式 */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--header-bg);
+    color: #fff;
+    padding: 0.75rem 1.5rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    position: relative;
+    z-index: 10;
+}
+header h1 {
+    font-size: 1.8rem;
+    margin: 0;
+}
+/* 设置按钮和主题切换容器优化 */
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem; /* 增加元素间的间距 */
+}
+/* 设置按钮 */
+.settings-button {
+    background-color: transparent;
+    color: #fff;
+    border: 2px solid #fff;
+    border-radius: 50px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s, color 0.3s, transform 0.2s;
+    display: flex;
+    align-items: center;
+}
+.settings-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+.settings-button:active {
+    transform: scale(0.95);
+}
+/* 主题切换开关 */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0; 
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: #fff;
+    transition: .4s;
+    border-radius: 50%;
+}
+input:checked + .slider {
+    background-color: #2196F3;
+}
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+/* 聊天容器 */
+#chatContainer {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    width: 100%;
+    overflow: hidden;
+}
+/* 聊天历史区域 */
+#chatHistory {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    background-color: var(--bg-color);
+    transition: background-color 0.3s;
+    position: relative;
+}
+/* 消息气泡样式 */
+.message {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    animation: fadeInUp 0.3s ease-in-out;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s, transform 0.3s;
+}
+.message.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+.message-content {
+    background-color: var(--bot-msg-bg);
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    max-width: 70%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    position: relative;
+    color: var(--text-color);
+}
+.message.user-message .message-content {
+    background-color: var(--user-msg-bg);
+    align-self: flex-end;
+}
+.author {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+/* 消息操作按钮（复制、删除） */
+.message-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.message:hover .message-actions {
+    opacity: 1;
+}
+.message-actions button {
+    padding: 0.15rem 0.25rem;
+    font-size: 0.75rem;
+    height: auto;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    background-color: transparent;
+    color: inherit;
+    transition: color 0.3s;
+}
+.copy-button svg,
+.delete-button svg {
+    fill: currentColor;
+    width: 16px;
+    height: 16px;
+}
+.copy-button:hover {
+    color: #1976D2;
+}
+.delete-button:hover {
+    color: #E64A19;
+}
+/* 输入区 */
+.inputs {
+    display: flex;
+    padding: 1rem;
+    align-items: flex-end;
+    background-color: var(--input-bg);
+    border-top: 1px solid #ddd;
+    transition: background-color 0.3s;
+    position: relative;
+}
+/* 修改输入框的背景颜色以适应暗色模式 */
+#messageInput {
+    flex-grow: 1;
+    padding: 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    resize: none;
+    min-height: 50px;
+    max-height: 150px;
+    overflow-y: auto;
+    font-size: 1rem;
+    transition: border 0.3s;
+    background-color: #fff;
+    color: #333;
+}
+.dark-mode #messageInput {
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    border: 1px solid #555;
+}
+#messageInput:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
+/* 发送、清除按钮 */
+button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    background-color: var(--button-bg);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-left: 0.5rem;
+    height: 40px;
+    min-width: 80px;
+    font-size: 1rem;
+    transition: background-color 0.3s, transform 0.2s;
+}
+button:disabled {
+    background-color: #9E9E9E;
+    cursor: not-allowed;
+}
+button:hover:not(:disabled) {
+    background-color: var(--button-hover-bg);
+}
+/* 按下按钮时的缩放效果 */
+button:active:not(:disabled) {
+    transform: scale(0.95);
+}
+#clearButton {
+    background-color: var(--clear-button-bg);
+}
+#clearButton:hover:not(:disabled) {
+    background-color: var(--clear-button-hover-bg);
+}
+/* 清理缓存按钮样式 */
+.clear-cache-button {
+    background-color: var(--clear-button-bg);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    margin-top: 0.5rem;
+}
+.clear-cache-button:hover {
+    background-color: var(--clear-button-hover-bg);
+}
+.clear-cache-button:active {
+    transform: scale(0.95);
+}
+/* 滚动条样式 */
+#chatHistory::-webkit-scrollbar {
+    width: 8px;
+}
+#chatHistory::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+}
+#chatHistory::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 4px;
+}
+#chatHistory::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+}
+/* Markdown 样式 */
+.message-content h1, .message-content h2, .message-content h3,
+.message-content h4, .message-content h5, .message-content h6 {
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    color: var(--text-color);
+}
+.message-content p {
+    margin-bottom: 1em;
+}
+.message-content ul, .message-content ol {
+    margin-bottom: 1em;
+    padding-left: 1.5em;
+}
+.message-content pre {
+    background-color: #eee;
+    padding: 1em;
+    border-radius: 5px;
+    overflow-x: auto;
+    position: relative;
+}
+.message-content code {
+    background-color: #eee;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+}
+.message-content blockquote {
+    border-left: 4px solid #ccc;
+    padding-left: 1em;
+    color: #666;
+    margin: 1em 0;
+}
+.message-content table {
+    border-collapse: collapse;
+    margin-bottom: 1em;
+    width: 100%;
+}
+.message-content th, .message-content td {
+    border: 1px solid #ddd;
+    padding: 0.5em;
+    text-align: left;
+}
+.message-content img {
+    max-width: 100%;
+    height: auto;
+}
+/* Prism.js 代码高亮覆盖 */
+.message-content pre {
+    background-color: #f5f2f0;
+    padding: 1em;
+    border-radius: 5px;
+    overflow-x: auto;
+}
+.message-content code {
+    background-color: transparent;
+    padding: 0;
+}
+/* 复制按钮样式 */
+.code-copy-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--code-copy-bg);
+    border: none;
+    padding: 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.code-copy-button:hover {
+    background: var(--code-copy-hover-bg);
+}
+.code-copy-button svg {
+    fill: var(--code-copy-color);
+    width: 16px;
+    height: 16px;
+}
+/* 加载中的小圆圈 */
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--button-bg);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+/* 模态框（设置弹窗） */
+.modal {
+    display: none; /* 默认隐藏 */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: var(--modal-bg);
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.3s;
+}
+.modal-content {
+    background-color: var(--input-bg);
+    padding: 2rem;
+    border: none;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    color: var(--text-color);
+    animation: fadeIn 0.3s;
+    position: relative;
+    outline: none; /* 移除默认焦点样式 */
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+.close {
+    color: var(--text-color);
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+.modal-body {
+    margin-top: 1rem;
+}
+.settings-section {
+    margin-bottom: 1.5rem;
+}
+.settings-section h3 {
+    margin-bottom: 0.75rem;
+    font-size: 1.2rem;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 0.5rem;
+}
+.setting-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+.setting-item label {
+    flex: 1;
+    font-weight: 500;
+    margin-right: 0.5rem;
+}
+.setting-item select,
+.setting-item input[type="text"] {
+    flex: 2;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    color: #333;
+    transition: border 0.3s;
+}
+.setting-item select:focus,
+.setting-item input[type="text"]:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
+/* 复选框开关样式 */
+.switch {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.switch .slider {
+    position: relative;
+    flex-shrink: 0;
+    width: 50px;
+    height: 24px;
+    background-color: #ccc;
+    border-radius: 34px;
+    transition: .4s;
+    margin-right: 0.5rem;
+}
+.switch .slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+.switch input:checked + .slider {
+    background-color: #4CAF50;
+}
+.switch input:checked + .slider:before {
+    transform: translateX(26px);
+}
+.switch-label {
+    font-size: 1rem;
+}
+/* 模态框底部按钮 */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+.modal-footer button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s, transform 0.2s;
+}
+.save-button {
+    background-color: #4CAF50;
+    color: white;
+}
+.save-button:hover {
+    background-color: #45a049;
+}
+.save-button:active {
+    transform: scale(0.95);
+}
+.cancel-button {
+    background-color: #f44336;
+    color: white;
+}
+.cancel-button:hover {
+    background-color: #d32f2f;
+}
+.cancel-button:active {
+    transform: scale(0.95);
+}
+/* Toast 通知 */
+.toast {
+    visibility: hidden;
+    min-width: 200px;
+    background-color: var(--toast-bg);
+    color: var(--toast-text);
+    text-align: center;
+    border-radius: 4px;
+    padding: 0.75rem;
+    position: fixed;
+    z-index: 1100;
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%);
+    font-size: 1rem;
+    opacity: 0;
+    transition: opacity 0.5s, visibility 0.5s;
+}
+.toast.show {
+    visibility: visible;
+    opacity: 1;
+}
+/* 响应式布局 */
+@media (max-width: 600px) {
+    .message-content {
+        max-width: 85%;
+    }
+    .header-controls {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    .toggle-switch {
+        margin-left: 0;
+    }
+    .inputs {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    button {
+        margin-left: 0;
+        margin-top: 0.5rem;
+        width: 100%;
+    }
+    header {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+/* 增强复制按钮的可访问性 */
+.code-copy-button:focus {
+    outline: 2px solid #1976D2;
+}
+
+/* 新增样式用于设置界面UI优化 */
+
+/* Settings Modal Enhancements */
+.settings-section h3 {
+    color: var(--text-color);
+}
+
+.settings-section hr {
+    border: none;
+    border-top: 1px solid #ccc;
+    margin: 1.5rem 0;
+}
+
+/* Style for input fields in settings */
+.setting-item input[type="text"] {
+    width: 100%;
+}
+
+.setting-item select {
+    width: 100%;
+}
+
+/* Ensure spacing between settings */
+.settings-section .setting-item {
+    margin-bottom: 1rem;
+}
+
+/* 复选框开关样式 */
+.switch {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.switch .slider {
+    position: relative;
+    flex-shrink: 0;
+    width: 50px;
+    height: 24px;
+    background-color: #ccc;
+    border-radius: 34px;
+    transition: .4s;
+    margin-right: 0.5rem;
+}
+.switch .slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+.switch input:checked + .slider {
+    background-color: #4CAF50;
+}
+.switch input:checked + .slider:before {
+    transform: translateX(26px);
+}
+.switch-label {
+    font-size: 1rem;
+}
+
+/* Modal content adjustments */
+.modal-content {
+    background-color: var(--input-bg);
+    padding: 2rem;
+    border: none;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    color: var(--text-color);
+    animation: fadeIn 0.3s;
+    position: relative;
+    outline: none; /* 移除默认焦点样式 */
+}
+.settings-section h3 {
+    margin-bottom: 0.75rem;
+    font-size: 1.2rem;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 0.5rem;
+}
+.settings-section .setting-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+.settings-section .setting-item label {
+    flex: 1;
+    font-weight: 500;
+    margin-right: 0.5rem;
+}
+.settings-section .setting-item input[type="text"],
+.settings-section .setting-item select {
+    flex: 2;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    color: #333;
+    transition: border 0.3s;
+}
+.settings-section .setting-item input[type="text"]:focus,
+.settings-section .setting-item select:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
+
+/* Modal footer buttons */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+.modal-footer button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s, transform 0.2s;
+}
+.save-button {
+    background-color: #4CAF50;
+    color: white;
+}
+.save-button:hover {
+    background-color: #45a049;
+}
+.save-button:active {
+    transform: scale(0.95);
+}
+.cancel-button {
+    background-color: #f44336;
+    color: white;
+}
+.cancel-button:hover {
+    background-color: #d32f2f;
+}
+.cancel-button:active {
+    transform: scale(0.95);
+}
+
+/* Toast 通知 */
+.toast {
+    visibility: hidden;
+    min-width: 200px;
+    background-color: var(--toast-bg);
+    color: var(--toast-text);
+    text-align: center;
+    border-radius: 4px;
+    padding: 0.75rem;
+    position: fixed;
+    z-index: 1100;
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%);
+    font-size: 1rem;
+    opacity: 0;
+    transition: opacity 0.5s, visibility 0.5s;
+}
+.toast.show {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* 响应式布局 */
+@media (max-width: 600px) {
+    .message-content {
+        max-width: 85%;
+    }
+    .header-controls {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    .toggle-switch {
+        margin-left: 0;
+    }
+    .inputs {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    button {
+        margin-left: 0;
+        margin-top: 0.5rem;
+        width: 100%;
+    }
+    header {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+/* 增强复制按钮的可访问性 */
+.code-copy-button:focus {
+    outline: 2px solid #1976D2;
+}
