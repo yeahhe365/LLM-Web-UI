@@ -1,6 +1,5 @@
 # LLM-Web-UI
 
-![项目徽标](https://github.com/yeahhe365/LLM-Web-UI/blob/main/assets/logo.png) <!-- 请替换为您的实际徽标链接 -->
 
 ## 简介
 
@@ -87,11 +86,11 @@ cd LLM-Web-UI
 
 <!-- 请将以下图片链接替换为您项目中的实际截图链接 -->
 
-![聊天界面](https://github.com/yeahhe365/LLM-Web-UI/blob/main/assets/chat-screenshot.png)
-*聊天界面示例*
+![PixPin_2024-12-23_11-05-35](https://github.com/user-attachments/assets/2191167e-6f31-4def-bb68-5d885e728954)
 
-![设置界面](https://github.com/yeahhe365/LLM-Web-UI/blob/main/assets/settings-screenshot.png)
-*设置界面示例*
+
+![PixPin_2024-12-23_11-05-55](https://github.com/user-attachments/assets/be5f2fc2-8deb-489c-a4eb-f4d96e933d1b)
+
 
 ## 常见问题 (FAQ)
 
@@ -143,14 +142,6 @@ A3: 你可以在 [GitHub Issues](https://github.com/yeahhe365/LLM-Web-UI/issues)
 
 *最后，如果你喜欢这个项目，请给我们一个 ⭐️！*
 
-## 示例截图
-
-<!-- 请将以下图片链接替换为您项目中的实际截图链接 -->
-
-![PixPin_2024-12-23_11-05-35](https://github.com/user-attachments/assets/2191167e-6f31-4def-bb68-5d885e728954)
-
-
-![PixPin_2024-12-23_11-05-55](https://github.com/user-attachments/assets/be5f2fc2-8deb-489c-a4eb-f4d96e933d1b)
 
 
 ---
