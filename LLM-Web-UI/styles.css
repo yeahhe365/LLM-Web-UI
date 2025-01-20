@@ -105,6 +105,12 @@ header {
 header h1 {
     font-size: 1.8rem;
     margin: 0;
+    /* 如果希望始终不超出，可自行加:
+       white-space: nowrap;
+       overflow: hidden;
+       text-overflow: ellipsis;
+       max-width: 60%;
+    */
 }
 .header-controls {
     display: flex;
@@ -770,14 +776,39 @@ button:active:not(:disabled) {
 
 /* ============ 针对手机端的优化 (最大宽度600px) ============ */
 @media (max-width: 600px) {
-    /* 顶部标题、按钮尺寸变小一些 */
+    /* 顶部整体缩小，不超出屏幕宽度 */
+    header {
+        padding: 0.5rem 1rem;
+    }
+    /* 标题更小，且可选地加上省略号处理（示例） */
     header h1 {
         font-size: 1.2rem;
+        max-width: 50%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
+    /* 顶部按钮更紧凑 */
     .sidebar-toggle, .settings-button {
-        padding: 0.3rem 0.6rem;
-        font-size: 0.875rem;
+        border: 1px solid #fff;
+        padding: 0.3rem 0.5rem;
+        font-size: 0.75rem;
     }
+    /* 缩小图标 */
+    .sidebar-toggle .material-icons,
+    .settings-button .material-icons,
+    #themeToggleIcon {
+        font-size: 18px !important; 
+    }
+    /* 缩小主题切换开关 */
+    .toggle-switch .slider {
+        width: 40px;
+    }
+    .toggle-switch .slider:before {
+        width: 16px;
+        height: 16px;
+    }
+
     /* 侧边栏默认折叠 */
     #sidebar {
         width: 0;
@@ -790,11 +821,11 @@ button:active:not(:disabled) {
     /* === 底部两个按钮并排，占满宽度，并留一点间距 === */
     .buttons-row {
         display: flex;
-        gap: 0.5rem; /* 两个按钮之间增加一点间距 */
+        gap: 0.5rem; /* 两个按钮之间的空隙 */
         justify-content: space-between;
     }
     .buttons-row button {
-        flex: 1;  /* 均分宽度 */
+        flex: 1; /* 均分宽度 */
     }
 }
 
@@ -813,7 +844,7 @@ button:active:not(:disabled) {
         margin-top: 0;             /* 去掉默认的上间距 */
         margin-left: auto;         /* 挤到右侧 */
         justify-content: flex-end; /* 靠右对齐 */
-        gap: 0.5rem;               /* 桌面端按钮也可留一点间距 */
+        gap: 0.5rem;               /* 按钮之间留一点间距 */
     }
     .buttons-row button {
         width: auto; /* 让按钮保持自适应大小 */
