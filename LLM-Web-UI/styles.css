@@ -202,10 +202,9 @@ input:checked + .slider:before {
     padding: 0;
     margin: 0;
 }
-
-/* ★★★ 历史记录每一项 ★★★ */
+/* 历史记录每一项 */
 .history-item {
-    position: relative;        /* 用于绝对定位删除按钮 */
+    position: relative;
     padding: 0.75rem 1rem;
     cursor: pointer;
     transition: background-color 0.2s;
@@ -242,7 +241,6 @@ input:checked + .slider:before {
     min-width: 0;
     overflow: hidden;
 }
-
 /* 新建对话按钮 */
 .new-chat-button {
     display: inline-flex;
@@ -334,7 +332,7 @@ input:checked + .slider:before {
     margin-bottom: 0.5rem;
     font-size: 0.95rem;
 }
-/* 消息操作按钮 */
+/* 消息操作按钮（复制、删除） */
 .message-actions {
     position: absolute;
     top: 8px;
@@ -365,27 +363,31 @@ input:checked + .slider:before {
     height: 16px;
 }
 .copy-button:hover {
-    color: #1976D2; /* Hover 时颜色可自行调整 */
+    color: #1976D2;
 }
 .delete-button:hover {
     color: #E64A19;
 }
 
 /* ================================
-   输入区
+   输入区（底部）
    ================================ */
 .inputs {
+    /* 
+      默认：纵向排列
+      - 移动端：输入框在上，两个按钮在下并排
+      - 桌面端：通过 media query 改为水平排
+    */
     display: flex;
+    flex-direction: column;
     padding: 1rem;
-    align-items: center;
     background-color: var(--input-bg);
     border-top: 1px solid #ddd;
     transition: background-color 0.3s;
     position: relative;
 }
 #messageInput {
-    flex-grow: 1;
-    margin-right: 0.5rem;
+    width: 100%;
     padding: 0.75rem;
     border: 1px solid #ccc;
     border-radius: 8px;
@@ -411,7 +413,12 @@ input:checked + .slider:before {
     border-color: #3f51b5;
     outline: none;
 }
-/* 发送、清除按钮 */
+/* 按钮行 */
+.buttons-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.75rem;  /* 移动端下方有间距 */
+}
 button {
     display: flex;
     align-items: center;
@@ -422,8 +429,6 @@ button {
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    margin-left: 0.5rem;
-    height: 40px;
     min-width: 80px;
     font-size: 1rem;
     transition: background-color 0.3s, transform 0.2s;
@@ -528,7 +533,6 @@ button:active:not(:disabled) {
     background-color: transparent;
     padding: 0;
 }
-
 /* 代码块复制按钮 */
 .code-copy-button {
     position: absolute;
@@ -764,33 +768,17 @@ button:active:not(:disabled) {
     opacity: 1;
 }
 
-/* ============ 响应式 ============ */
+/* ============ 针对手机端的优化 (最大宽度600px) ============ */
 @media (max-width: 600px) {
-    .message-content {
-        max-width: 85%;
+    /* 顶部标题、按钮尺寸变小一些 */
+    header h1 {
+        font-size: 1.2rem;
     }
-    .header-controls {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
+    .sidebar-toggle, .settings-button {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.875rem;
     }
-    .toggle-switch {
-        margin-left: 0;
-    }
-    .inputs {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    button {
-        margin-left: 0;
-        margin-top: 0.5rem;
-        width: 100%;
-    }
-    header {
-        flex-direction: column;
-        align-items: center;
-    }
-    /* 小屏幕默认折叠左侧栏 */
+    /* 侧边栏默认折叠 */
     #sidebar {
         width: 0;
         overflow: hidden;
@@ -798,8 +786,36 @@ button:active:not(:disabled) {
     #mainContainer.sidebar-collapsed #sidebar {
         width: 250px;
     }
+
+    /* === 底部两个按钮并排，占满宽度，并留一点间距 === */
+    .buttons-row {
+        display: flex;
+        gap: 0.5rem; /* 两个按钮之间增加一点间距 */
+        justify-content: space-between;
+    }
+    .buttons-row button {
+        flex: 1;  /* 均分宽度 */
+    }
 }
-/* 代码块复制按钮可访问性 */
-.code-copy-button:focus {
-    outline: 2px solid #1976D2;
+
+/* ============ 针对桌面端 (最小宽度601px) ============ */
+@media (min-width: 601px) {
+    /* 让输入框和按钮在同一行，按钮在右侧 */
+    .inputs {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+    #messageInput {
+        flex: 1;
+        margin-right: 1rem;
+    }
+    .buttons-row {
+        margin-top: 0;             /* 去掉默认的上间距 */
+        margin-left: auto;         /* 挤到右侧 */
+        justify-content: flex-end; /* 靠右对齐 */
+        gap: 0.5rem;               /* 桌面端按钮也可留一点间距 */
+    }
+    .buttons-row button {
+        width: auto; /* 让按钮保持自适应大小 */
+    }
 }

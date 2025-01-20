@@ -91,14 +91,19 @@
       <div id="chatHistory" aria-live="polite" aria-atomic="false">
         <!-- 聊天记录动态插入 -->
       </div>
+
+      <!-- 底部输入与按钮区域 -->
       <div class="inputs">
+        <!-- 文本框独占一行，按钮们放到下方 -->
         <textarea id="messageInput" placeholder="输入你的消息..." rows="1" aria-label="消息输入"></textarea>
-        <button id="sendButton" aria-label="发送">
-          <span class="material-icons">send</span> 发送
-        </button>
-        <button id="clearButton" aria-label="清除聊天">
-          <span class="material-icons">delete_sweep</span> 清除
-        </button>
+        <div class="buttons-row">
+          <button id="clearButton" aria-label="清除聊天">
+            <span class="material-icons">delete_sweep</span> 清除
+          </button>
+          <button id="sendButton" aria-label="发送">
+            <span class="material-icons">send</span> 发送
+          </button>
+        </div>
       </div>
     </div>
   </div>
