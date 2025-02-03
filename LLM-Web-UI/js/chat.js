@@ -83,6 +83,30 @@ function getCurrentConversation() {
   return conversations.find(c => c.id === currentConversationId);
 }
 
+// ★ 新增：读取当前激活的 API 配置
+function getActiveApiConfig() {
+  let apiConfigs = [];
+  try {
+    apiConfigs = JSON.parse(localStorage.getItem('apiConfigs')) || [];
+  } catch (e) {
+    apiConfigs = [];
+  }
+  const activeId = localStorage.getItem('activeApiConfigId');
+  let activeConfig = apiConfigs.find(cfg => cfg.id === activeId);
+  if (!activeConfig) {
+    // 若没有配置或激活项，则使用默认配置
+    activeConfig = {
+      id: 'default',
+      name: '默认模型',
+      apiKey: '',
+      apiBaseUrl: 'https://api.openai.com',
+      modelId: '',
+      apiFormat: 'openai'
+    };
+  }
+  return activeConfig;
+}
+
 // ========== 发送消息 ==========
 export async function sendMessage() {
   if (isSending) return;
@@ -91,15 +115,13 @@ export async function sendMessage() {
   const message = messageInput.value.trim();
   if (!message) return;
 
-  const apiKey = localStorage.getItem('apiKey');
-  if (!apiKey) {
+  // ★ 读取当前激活的 API 配置
+  const activeConfig = getActiveApiConfig();
+  if (!activeConfig.apiKey) {
     showToast('请在设置中配置 API Key。');
     return;
   }
-  // 读取 Base URL，默认 https://generativelanguage.googleapis.com
-  const baseUrl = localStorage.getItem('apiBaseUrl') || 'https://generativelanguage.googleapis.com';
-  // 读取模型 ID，默认 gemini-2.0-flash-exp
-  const modelId = localStorage.getItem('modelId') || 'gemini-2.0-flash-exp';
+  const { apiKey, apiBaseUrl, modelId, apiFormat } = activeConfig;
 
   const conversation = getCurrentConversation();
   if (!conversation) {
@@ -110,6 +132,9 @@ export async function sendMessage() {
   isSending = true;
   sendButton.disabled = true;
   sendButton.innerHTML = '<span class="material-icons">sync</span> 发送中...';
+
+  // 使用当前配置中的名称作为机器人名称（若为空则默认 "LLM Chat"）
+  const botName = activeConfig.name || "LLM Chat";
 
   // 1. 添加用户消息
   addMessageToChat('User', message, 'user-message', false);
@@ -130,45 +155,64 @@ export async function sendMessage() {
   messageInput.value = '';
   adjustTextareaHeight(messageInput);
 
-  // 2. “生成中”占位
-  const loadingMessage = addMessageToChat('Gemini AI', '生成回复中...', 'bot-message', true);
+  // 2. “生成中”占位，使用 botName
+  const loadingMessage = addMessageToChat(botName, '生成回复中...', 'bot-message', true);
 
   try {
-    // 拼接路径：/v1beta/models/${modelId}:generateContent
-    const response = await fetch(
-      `${baseUrl}/v1beta/models/${modelId}:generateContent?key=${apiKey}`,
-      {
+    let botResponse = '';
+    if (apiFormat === 'openai') {
+      // OpenAI 接口调用
+      const response = await fetch(`${apiBaseUrl}/v1/chat/completions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
         body: JSON.stringify({
-          contents: [
-            { parts: [{ text: message }] }
-          ]
+          model: modelId,
+          messages: [{ role: "user", content: message }]
         })
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP 错误！状态: ${response.status}`);
       }
-    );
-
-    if (!response.ok) {
-      throw new Error(`HTTP 错误！状态: ${response.status}`);
+      const data = await response.json();
+      botResponse = data.choices?.[0]?.message?.content || '抱歉，我无法生成回复。';
+    } else {
+      // LLM Chat（原 Gemini 格式）接口调用
+      const response = await fetch(
+        `${apiBaseUrl}/v1beta/models/${modelId}:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              { parts: [{ text: message }] }
+            ]
+          })
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`HTTP 错误！状态: ${response.status}`);
+      }
+      const data = await response.json();
+      botResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '抱歉，我无法生成回复。';
     }
-
-    const data = await response.json();
-    const botResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '抱歉，我无法生成回复。';
 
     removeLoadingMessage(loadingMessage);
 
     if (enableStreaming) {
-      addStreamMessageToChat('Gemini AI', botResponse, 'bot-message');
+      addStreamMessageToChat(botName, botResponse, 'bot-message');
       conversation.messages.push({
-        author: 'Gemini AI',
+        author: botName,
         content: botResponse,
         className: 'bot-message',
         isStream: true
       });
     } else {
-      addMessageToChat('Gemini AI', botResponse, 'bot-message', false);
+      addMessageToChat(botName, botResponse, 'bot-message', false);
       conversation.messages.push({
-        author: 'Gemini AI',
+        author: botName,
         content: botResponse,
         className: 'bot-message',
         isStream: false
@@ -179,9 +223,9 @@ export async function sendMessage() {
   } catch (error) {
     console.error("错误:", error);
     removeLoadingMessage(loadingMessage);
-    addMessageToChat('Gemini AI', `错误: ${error.message}`, 'bot-message', false);
+    addMessageToChat(botName, `错误: ${error.message}`, 'bot-message', false);
     conversation.messages.push({
-      author: 'Gemini AI',
+      author: botName,
       content: `错误: ${error.message}`,
       className: 'bot-message',
       isStream: false
@@ -246,7 +290,6 @@ export function addMessageToChat(author, message, className, isLoading = false) 
       });
     }
 
-    // 渲染公式与代码
     MathJax.typesetPromise([messageDiv.querySelector('.content')]).then(() => {
       Prism.highlightAllUnder(messageDiv);
       addCopyButtonsToCodeBlocks(messageDiv);
@@ -376,7 +419,6 @@ function loadConversations() {
 }
 
 // ========== 工具函数 ==========
-
 function generateConversationId() {
   return 'conv-' + Date.now() + '-' + Math.floor(Math.random() * 10000);
 }

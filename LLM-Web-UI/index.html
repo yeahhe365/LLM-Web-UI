@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gemini AI 聊天</title>
+  <title>LLM Chat</title>
 
   <!-- favicon 引入，如果需要，可以自行保留 -->
   <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">
@@ -57,7 +57,7 @@
 </head>
 <body>
   <header>
-    <h1>Gemini AI 聊天</h1>
+    <h1>LLM Chat</h1>
     <div class="header-controls">
       <button class="sidebar-toggle" id="toggleSidebar" aria-label="展开/折叠侧边栏">
         <span class="material-icons" style="font-size:20px;color:#fff;">menu</span>
@@ -74,13 +74,14 @@
         <input type="checkbox" id="themeToggle">
         <span class="slider"></span>
       </label>
+
+      <!-- 修改：为 API 配置下拉框添加类 model-switch 以便美化 -->
+      <select id="apiConfigSelect" class="model-switch" aria-label="选择语言模型 API"></select>
     </div>
   </header>
 
   <div id="mainContainer">
     <div id="sidebar">
-      <!-- 如果不需要“历史记录”，可移除 h2 -->
-      <!-- <h2>历史记录</h2> -->
       <button id="newChatButton" aria-label="新建对话" class="new-chat-button">
         <span class="material-icons">add</span> 新建对话
       </button>
@@ -92,9 +93,7 @@
         <!-- 聊天记录动态插入 -->
       </div>
 
-      <!-- 底部输入与按钮区域 -->
       <div class="inputs">
-        <!-- 文本框独占一行，按钮们放到下方 -->
         <textarea id="messageInput" placeholder="输入你的消息..." rows="1" aria-label="消息输入"></textarea>
         <div class="buttons-row">
           <button id="clearButton" aria-label="清除聊天">
@@ -108,7 +107,6 @@
     </div>
   </div>
 
-  <!-- 设置弹窗 -->
   <div id="settingsModal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="settingsTitle">
     <div class="modal-content" tabindex="-1">
       <div class="modal-header">
@@ -136,22 +134,13 @@
           </div>
         </div>
 
+        <!-- 新版 API 配置 -->
         <div class="settings-section">
-          <h3>API 设置</h3>
-          <div class="setting-item">
-            <label for="apiKeyInput">API Key:</label>
-            <input type="text" id="apiKeyInput" placeholder="输入你的 API Key" aria-label="API Key 输入" />
-          </div>
-          <div class="setting-item">
-            <label for="apiUrlInput">API Base URL:</label>
-            <input type="text" id="apiUrlInput" placeholder="https://generativelanguage.googleapis.com" aria-label="API URL 输入" />
-          </div>
-
-          <!-- 新增：模型 ID 输入框 -->
-          <div class="setting-item">
-            <label for="modelIdInput">模型 ID:</label>
-            <input type="text" id="modelIdInput" placeholder="gemini-2.0-flash-exp" aria-label="模型ID 输入" />
-          </div>
+          <h3>语言模型 API 配置</h3>
+          <div id="apiConfigsContainer"></div>
+          <button id="addApiConfigButton" class="new-chat-button" style="margin-top:10px;">
+            <span class="material-icons">add</span> 新增 API 配置
+          </button>
         </div>
 
         <div class="settings-section">

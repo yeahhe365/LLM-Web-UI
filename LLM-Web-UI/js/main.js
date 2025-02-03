@@ -18,7 +18,7 @@ import {
 	initSettingsEvents
 } from './settings.js';
 
-import { addCopyButtonsToCodeBlocks } from './utils.js';
+import { addCopyButtonsToCodeBlocks, showToast } from './utils.js';
 
 function initApp() {
 	// 初始化聊天逻辑
@@ -43,9 +43,8 @@ function initApp() {
 
 	// ★ 监听键盘事件，实现 Enter 发送、Shift+Enter 换行
 	messageInput.addEventListener('keydown', (event) => {
-		// 如果按下 Enter 且没有按下 Shift，则发送消息
 		if (event.key === 'Enter' && !event.shiftKey) {
-			event.preventDefault(); // 阻止默认换行
+			event.preventDefault();
 			sendMessage();
 		}
 	});
@@ -55,6 +54,16 @@ function initApp() {
 		const chatHistory = document.getElementById("chatHistory");
 		addCopyButtonsToCodeBlocks(chatHistory);
 	});
+
+  // ★ 绑定头部 API 配置下拉框的切换事件
+  const apiConfigSelect = document.getElementById('apiConfigSelect');
+  if(apiConfigSelect) {
+    apiConfigSelect.addEventListener('change', () => {
+      localStorage.setItem('activeApiConfigId', apiConfigSelect.value);
+      const selectedText = apiConfigSelect.options[apiConfigSelect.selectedIndex].textContent;
+      showToast('已切换 API: ' + selectedText);
+    });
+  }
 }
 
 initApp();
