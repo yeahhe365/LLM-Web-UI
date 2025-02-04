@@ -24,6 +24,87 @@
 
   <!-- Marked.js 用于渲染 Markdown -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    /********* 数学公式扩展 *********/
+    // 扩展 inline math：识别 $...$（但不匹配 $$...$$）
+    const inlineMathExtension = {
+      name: 'inlineMath',
+      level: 'inline',
+      start(src) {
+        return src.indexOf('$');
+      },
+      tokenizer(src) {
+        const inlineMathRegex = /^\$(?!\$)([^\$]+?)\$(?!\$)/;
+        const match = inlineMathRegex.exec(src);
+        if (match) {
+          return {
+            type: 'inlineMath',
+            raw: match[0],
+            text: match[1].trim()
+          };
+        }
+      },
+      renderer(token) {
+        // 直接输出包裹 $...$ ，MathJax 会渲染
+        return `$${token.text}$`;
+      }
+    };
+
+    // 扩展 display math：识别 $$...$$
+    const displayMathExtension = {
+      name: 'displayMath',
+      level: 'block',
+      start(src) {
+        return src.indexOf('$$');
+      },
+      tokenizer(src) {
+        const displayMathRegex = /^\$\$([\s\S]+?)\$\$/;
+        const match = displayMathRegex.exec(src);
+        if (match) {
+          return {
+            type: 'displayMath',
+            raw: match[0],
+            text: match[1].trim()
+          };
+        }
+      },
+      renderer(token) {
+        return `<div>$$${token.text}$$</div>`;
+      }
+    };
+
+    /********* 自定义代码块渲染器 *********/
+    // 获取默认 renderer 的代码块处理函数
+    const defaultRenderer = new marked.Renderer();
+    const originalCode = defaultRenderer.code;
+    defaultRenderer.code = function(code, language, escaped) {
+      // 如果没有指定语言，但内容看起来像是纯数学公式（例如以 $ 或 $$ 开头和结尾），则直接输出数学公式
+      if (!language && /^\s*\${1,2}[\s\S]+\${1,2}\s*$/.test(code)) {
+        // 去掉可能存在的多余空白
+        const trimmed = code.trim();
+        // 如果以 $$ 开头，则作为块级公式输出；否则作为行内公式输出
+        if (trimmed.startsWith('$$')) {
+          // 注意：保持 $$ 不变，MathJax 会识别
+          return `<div>${trimmed}</div>`;
+        } else {
+          return `$${trimmed.replace(/^\$|^\s*\$/g, '')}$`;
+        }
+      }
+      // 如果指定语言为 latex 或 tex，同样直接输出数学公式
+      if (language && (language.toLowerCase() === 'latex' || language.toLowerCase() === 'tex')) {
+        return `<div>$$${code}$$</div>`;
+      }
+      // 否则调用默认的代码块渲染
+      return originalCode.call(this, code, language, escaped);
+    };
+
+    /********* 设置 marked 选项 *********/
+    marked.use({
+      extensions: [inlineMathExtension, displayMathExtension],
+      renderer: defaultRenderer
+    });
+  </script>
+
   <!-- DOMPurify 以增强安全性 -->
   <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.10/dist/purify.min.js"></script>
   <!-- MathJax 用于渲染 LaTeX -->
@@ -35,7 +116,8 @@
         processEscapes: true
       },
       options: {
-        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+        // 修改：移除 'pre' 标签（默认会跳过 <pre> 内内容）
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea']
       }
     };
   </script>
@@ -138,9 +220,19 @@
         <div class="settings-section">
           <h3>语言模型 API 配置</h3>
           <div id="apiConfigsContainer"></div>
-          <button id="addApiConfigButton" class="new-chat-button" style="margin-top:10px;">
-            <span class="material-icons">add</span> 新增 API 配置
-          </button>
+          <div class="api-config-buttons">
+            <button id="addApiConfigButton" class="new-chat-button">
+              <span class="material-icons">add</span> 新增 API 配置
+            </button>
+            <button id="exportApiConfigButton" class="new-chat-button">
+              <span class="material-icons">file_download</span> 导出 API 配置
+            </button>
+            <button id="importApiConfigButton" class="new-chat-button">
+              <span class="material-icons">file_upload</span> 导入 API 配置
+            </button>
+          </div>
+          <!-- 隐藏的文件选择器，用于导入 -->
+          <input type="file" id="importApiConfigInput" accept=".json" style="display:none;" />
         </div>
 
         <div class="settings-section">

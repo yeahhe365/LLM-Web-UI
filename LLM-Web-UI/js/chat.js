@@ -1,9 +1,11 @@
-// chat.js: 聊天核心逻辑
+// chat.js: 聊天核心逻辑（已修改支持直接渲染 LaTeX 公式和“停止”功能）
 
 import { showToast, copyMessage, deleteMessage, addCopyButtonsToCodeBlocks, escapeHTML } from './utils.js';
 import { renderHistorySidebar } from './sidebar.js';
 
 let isSending = false;
+let stopStreaming = false;      // 当用户点击停止时置为 true
+let currentAbortController = null;  // 用于中断 fetch 请求
 let autoScroll = true;
 let enableStreaming = true;
 
@@ -129,12 +131,13 @@ export async function sendMessage() {
     return;
   }
 
+  // ★ 新增：设置中断相关变量，并创建 AbortController（用于中断 fetch）
   isSending = true;
-  sendButton.disabled = true;
-  sendButton.innerHTML = '<span class="material-icons">sync</span> 发送中...';
+  stopStreaming = false;
+  currentAbortController = new AbortController();
 
-  // 使用当前配置中的名称作为机器人名称（若为空则默认 "LLM Chat"）
-  const botName = activeConfig.name || "LLM Chat";
+  // ★ 修改：发送中按钮变为“停止”按钮（按钮保持可点击状态）
+  sendButton.innerHTML = '<span class="material-icons">stop</span> 停止';
 
   // 1. 添加用户消息
   addMessageToChat('User', message, 'user-message', false);
@@ -156,12 +159,13 @@ export async function sendMessage() {
   adjustTextareaHeight(messageInput);
 
   // 2. “生成中”占位，使用 botName
+  const botName = activeConfig.name || "LLM Chat";
   const loadingMessage = addMessageToChat(botName, '生成回复中...', 'bot-message', true);
 
   try {
     let botResponse = '';
     if (apiFormat === 'openai') {
-      // OpenAI 接口调用
+      // OpenAI 接口调用（添加 signal 参数支持中断）
       const response = await fetch(`${apiBaseUrl}/v1/chat/completions`, {
         method: 'POST',
         headers: {
@@ -171,7 +175,8 @@ export async function sendMessage() {
         body: JSON.stringify({
           model: modelId,
           messages: [{ role: "user", content: message }]
-        })
+        }),
+        signal: currentAbortController.signal
       });
       if (!response.ok) {
         throw new Error(`HTTP 错误！状态: ${response.status}`);
@@ -179,7 +184,7 @@ export async function sendMessage() {
       const data = await response.json();
       botResponse = data.choices?.[0]?.message?.content || '抱歉，我无法生成回复。';
     } else {
-      // LLM Chat（原 Gemini 格式）接口调用
+      // LLM Chat（原 Gemini 格式）接口调用（添加 signal 参数支持中断）
       const response = await fetch(
         `${apiBaseUrl}/v1beta/models/${modelId}:generateContent?key=${apiKey}`,
         {
@@ -189,7 +194,8 @@ export async function sendMessage() {
             contents: [
               { parts: [{ text: message }] }
             ]
-          })
+          }),
+          signal: currentAbortController.signal
         }
       );
       if (!response.ok) {
@@ -223,32 +229,54 @@ export async function sendMessage() {
   } catch (error) {
     console.error("错误:", error);
     removeLoadingMessage(loadingMessage);
-    addMessageToChat(botName, `错误: ${error.message}`, 'bot-message', false);
+    if (error.name === 'AbortError') {
+      addMessageToChat(botName, '生成已停止。', 'bot-message', false);
+    } else {
+      addMessageToChat(botName, `错误: ${error.message}`, 'bot-message', false);
+    }
     conversation.messages.push({
       author: botName,
-      content: `错误: ${error.message}`,
+      content: error.name === 'AbortError' ? '生成已停止。' : `错误: ${error.message}`,
       className: 'bot-message',
       isStream: false
     });
     saveConversations();
   } finally {
-    sendButton.disabled = false;
+    // ★ 恢复按钮显示为“发送”
     sendButton.innerHTML = '<span class="material-icons">send</span> 发送';
     isSending = false;
+    currentAbortController = null;
   }
+}
+
+// ★ 新增：停止当前发送（中断 fetch 和流式打字效果）
+export function stopSending() {
+  if (isSending && currentAbortController) {
+    currentAbortController.abort();
+    stopStreaming = true;
+  }
+}
+
+// ★ 新增：获取发送状态
+export function getIsSending() {
+  return isSending;
 }
 
 // ========== 添加静态消息到聊天区 ==========
 export function addMessageToChat(author, message, className, isLoading = false) {
   const chatHistory = document.getElementById("chatHistory");
+  if (!chatHistory) return null;
   const messageDiv = document.createElement('div');
   messageDiv.className = `message ${className}`;
   messageDiv.setAttribute('tabindex', '0');
+  // ★ 保存原始 Markdown 文本
+  messageDiv.setAttribute('data-original-markdown', message);
 
   let content = '';
   if (isLoading && className === 'bot-message') {
     content = '<div class="spinner" aria-label="加载中"></div>';
   } else {
+    // ★ 使用 marked.parse 将消息转换为 HTML；此时数学公式（$…$ 或 $$…$$）会按扩展规则保留原样
     content = DOMPurify.sanitize(marked.parse(message));
   }
 
@@ -290,8 +318,11 @@ export function addMessageToChat(author, message, className, isLoading = false) 
       });
     }
 
+    // ★ 修改：只对 <pre> 内的 <code> 元素执行 Prism 高亮
     MathJax.typesetPromise([messageDiv.querySelector('.content')]).then(() => {
-      Prism.highlightAllUnder(messageDiv);
+      messageDiv.querySelectorAll('pre > code').forEach(block => {
+        Prism.highlightElement(block);
+      });
       addCopyButtonsToCodeBlocks(messageDiv);
     }).catch(err => console.error('MathJax 渲染错误:', err));
 
@@ -307,6 +338,8 @@ function addStreamMessageToChat(author, fullMessage, className) {
   messageDiv.className = `message ${className}`;
   messageDiv.setAttribute('tabindex', '0');
   messageDiv.dataset.stream = 'true';
+  // ★ 保存原始 Markdown 文本
+  messageDiv.setAttribute('data-original-markdown', fullMessage);
 
   messageDiv.innerHTML = `
     <div class="message-content">
@@ -342,20 +375,50 @@ function addStreamMessageToChat(author, fullMessage, className) {
   const contentDiv = messageDiv.querySelector('.content');
   let index = 0;
   let partialText = '';
+  let lastTime = performance.now();
 
   function typeNextChar() {
-    if (index < fullMessage.length) {
-      partialText += fullMessage.charAt(index);
-      index++;
-      const safeHTML = DOMPurify.sanitize(marked.parse(partialText));
+    if (stopStreaming) {
+      // ★ 若用户已点击停止，则直接将完整内容显示出来
+      const safeHTML = DOMPurify.sanitize(marked.parse(fullMessage));
       contentDiv.innerHTML = safeHTML;
-
       MathJax.typesetPromise([contentDiv]).then(() => {
-        Prism.highlightAllUnder(contentDiv);
+        contentDiv.querySelectorAll('pre > code').forEach(block => {
+          Prism.highlightElement(block);
+        });
         addCopyButtonsToCodeBlocks(messageDiv);
         scrollToBottomIfNeeded(chatHistory);
       }).catch(err => console.error('MathJax 渲染错误:', err));
-
+      messageDiv.dataset.stream = 'false';
+      const conversation = getCurrentConversation();
+      if (conversation && conversation.messages.length > 0) {
+        const lastMsg = conversation.messages[conversation.messages.length - 1];
+        if (lastMsg.isStream) {
+          lastMsg.isStream = false;
+          saveConversations();
+        }
+      }
+      renderHistorySidebar();
+      return;
+    }
+    const now = performance.now();
+    const delta = now - lastTime;
+    lastTime = now;
+    let charsToAdd = Math.floor(delta / 5);
+    if (charsToAdd < 1) charsToAdd = 1;
+    const newIndex = Math.min(index + charsToAdd, fullMessage.length);
+    partialText = fullMessage.substring(0, newIndex);
+    index = newIndex;
+    const safeHTML = DOMPurify.sanitize(marked.parse(partialText));
+    contentDiv.innerHTML = safeHTML;
+    MathJax.typesetPromise([contentDiv]).then(() => {
+      contentDiv.querySelectorAll('pre > code').forEach(block => {
+        Prism.highlightElement(block);
+      });
+      addCopyButtonsToCodeBlocks(messageDiv);
+      scrollToBottomIfNeeded(chatHistory);
+    }).catch(err => console.error('MathJax 渲染错误:', err));
+    if (index < fullMessage.length) {
       setTimeout(typeNextChar, 5);
     } else {
       messageDiv.dataset.stream = 'false';

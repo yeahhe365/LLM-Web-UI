@@ -437,23 +437,33 @@ button:active:not(:disabled) {
 }
 
 /* =========================================
-   滚动条
+   自定义滚动条样式
    ========================================= */
 #chatHistory::-webkit-scrollbar,
-#sidebar::-webkit-scrollbar {
-    width: 8px;
+#sidebar::-webkit-scrollbar,
+#apiConfigsContainer::-webkit-scrollbar {
+    width: 10px;
 }
+
 #chatHistory::-webkit-scrollbar-track,
-#sidebar::-webkit-scrollbar-track {
+#sidebar::-webkit-scrollbar-track,
+#apiConfigsContainer::-webkit-scrollbar-track {
     background: var(--scrollbar-track);
+    border-radius: 10px;
 }
+
 #chatHistory::-webkit-scrollbar-thumb,
-#sidebar::-webkit-scrollbar-thumb {
+#sidebar::-webkit-scrollbar-thumb,
+#apiConfigsContainer::-webkit-scrollbar-thumb {
     background: var(--scrollbar-thumb);
-    border-radius: 4px;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: content-box;
 }
+
 #chatHistory::-webkit-scrollbar-thumb:hover,
-#sidebar::-webkit-scrollbar-thumb:hover {
+#sidebar::-webkit-scrollbar-thumb:hover,
+#apiConfigsContainer::-webkit-scrollbar-thumb:hover {
     background: var(--scrollbar-thumb-hover);
 }
 
@@ -576,6 +586,7 @@ button:active:not(:disabled) {
     justify-content: center;
     align-items: center;
     transition: opacity 0.3s;
+    backdrop-filter: blur(5px);
 }
 .modal-content {
     background-color: var(--input-bg);
@@ -590,6 +601,7 @@ button:active:not(:disabled) {
     outline: none;
     max-height: 80vh;
     overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
 }
 @keyframes fadeIn {
     from { opacity: 0; transform: scale(0.95); }
@@ -889,4 +901,16 @@ button:active:not(:disabled) {
 .api-config-actions span.material-icons {
     font-size: 20px;
     vertical-align: middle;
+}
+
+/* ★ 新增：API 配置区域按钮的统一布局 */
+.api-config-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+.api-config-buttons .new-chat-button {
+    flex: 1;
+    min-width: 120px;
 }

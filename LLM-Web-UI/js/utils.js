@@ -10,18 +10,20 @@ export function showToast(message) {
 	  toast.classList.remove('show');
 	}, 3000);
   }
-  
+	
   // 复制消息
   export function copyMessage(messageDiv) {
-	const messageContent = messageDiv.querySelector('.content').innerText;
-	navigator.clipboard.writeText(messageContent)
+	// ★ 优先复制存储在 data-original-markdown 中的原始 Markdown 文本
+	const originalMarkdown = messageDiv.getAttribute('data-original-markdown') ||
+							 messageDiv.querySelector('.content').innerText;
+	navigator.clipboard.writeText(originalMarkdown)
 	  .then(() => showToast('消息已复制到剪贴板！'))
 	  .catch(err => {
 		console.error('复制失败: ', err);
 		showToast('复制消息失败。');
 	  });
   }
-  
+	
   // 删除消息
   export function deleteMessage(messageDiv) {
 	messageDiv.classList.remove('show');
@@ -35,14 +37,14 @@ export function showToast(message) {
 	  showToast('消息已删除。');
 	}, 300);
   }
-  
+	
   // 给代码块添加复制按钮
   export function addCopyButtonsToCodeBlocks(container) {
 	const codeBlocks = container.querySelectorAll('pre > code');
 	codeBlocks.forEach(codeBlock => {
 	  const pre = codeBlock.parentElement;
 	  if (pre.querySelector('.code-copy-button')) return; // 避免重复
-  
+	
 	  const copyButton = document.createElement('button');
 	  copyButton.className = 'code-copy-button';
 	  copyButton.setAttribute('aria-label', '复制代码');
@@ -51,21 +53,23 @@ export function showToast(message) {
 		  <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 18H8V7h11v16z"/>
 		</svg>
 	  `;
-  
+	
 	  copyButton.addEventListener('click', () => {
-		const code = codeBlock.innerText;
-		navigator.clipboard.writeText(code).then(() => {
+		// ★ 尝试查找代码块所在元素是否存有原始 Markdown（如在聊天消息中）
+		const originalMarkdown = codeBlock.parentElement.getAttribute('data-original-markdown') ||
+								 codeBlock.innerText;
+		navigator.clipboard.writeText(originalMarkdown).then(() => {
 		  showToast('代码已复制到剪贴板！');
 		}).catch(err => {
 		  console.error('复制失败: ', err);
 		  showToast('复制代码失败。');
 		});
 	  });
-  
+	
 	  pre.appendChild(copyButton);
 	});
   }
-  
+	
   // 简单的 HTML 转义
   export function escapeHTML(str) {
 	const div = document.createElement('div');

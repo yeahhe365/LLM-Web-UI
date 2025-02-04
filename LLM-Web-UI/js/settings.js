@@ -92,6 +92,61 @@ export function initSettingsEvents() {
     const newEntry = createApiConfigEntry();
     container.appendChild(newEntry);
   });
+
+  // ★ 新增：绑定“导出 API 配置”和“导入 API 配置”按钮
+  const exportApiConfigBtn = document.getElementById('exportApiConfigButton');
+  const importApiConfigBtn = document.getElementById('importApiConfigButton');
+  const importApiConfigInput = document.getElementById('importApiConfigInput');
+  if(exportApiConfigBtn) {
+    exportApiConfigBtn.addEventListener('click', () => {
+      try {
+        let apiConfigs = JSON.parse(localStorage.getItem('apiConfigs')) || [];
+        let jsonStr = JSON.stringify(apiConfigs, null, 2);
+        const blob = new Blob([jsonStr], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "api-configs.json";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('API 配置已导出。');
+      } catch (error) {
+        console.error("导出 API 配置错误:", error);
+        showToast('导出 API 配置失败。');
+      }
+    });
+  }
+
+  if(importApiConfigBtn && importApiConfigInput) {
+    importApiConfigBtn.addEventListener('click', () => {
+      importApiConfigInput.click();
+    });
+
+    importApiConfigInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const importedConfigs = JSON.parse(e.target.result);
+          localStorage.setItem('apiConfigs', JSON.stringify(importedConfigs));
+          if (importedConfigs.length > 0) {
+            localStorage.setItem('activeApiConfigId', importedConfigs[0].id);
+          }
+          loadApiConfigs();
+          updateApiConfigSelect();
+          showToast('API 配置已导入。');
+        } catch (error) {
+          console.error("导入 API 配置错误:", error);
+          showToast('导入 API 配置失败。请检查文件格式。');
+        }
+      };
+      reader.readAsText(file);
+      importApiConfigInput.value = "";
+    });
+  }
 }
 
 // ========== 加载各项配置 ==========
