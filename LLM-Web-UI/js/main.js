@@ -5,6 +5,8 @@ import {
 	createNewConversation,
 	clearChat,
 	sendMessage,
+	stopSending,
+	getIsSending,
 	adjustTextareaHeight
 } from './chat.js';
 
@@ -34,7 +36,14 @@ function initApp() {
 
 	// 绑定按钮事件
 	document.getElementById('clearButton').addEventListener('click', clearChat);
-	document.getElementById('sendButton').addEventListener('click', sendMessage);
+	// 修改：点击发送按钮时，如果正在发送则调用 stopSending，否则调用 sendMessage
+	document.getElementById('sendButton').addEventListener('click', () => {
+		if (getIsSending()) {
+			stopSending();
+		} else {
+			sendMessage();
+		}
+	});
 	document.getElementById('newChatButton').addEventListener('click', createNewConversation);
 
 	// 绑定 textarea 的输入事件, 自动增高
@@ -45,7 +54,11 @@ function initApp() {
 	messageInput.addEventListener('keydown', (event) => {
 		if (event.key === 'Enter' && !event.shiftKey) {
 			event.preventDefault();
-			sendMessage();
+			if (getIsSending()) {
+				stopSending();
+			} else {
+				sendMessage();
+			}
 		}
 	});
 

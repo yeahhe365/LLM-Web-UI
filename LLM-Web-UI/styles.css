@@ -914,3 +914,25 @@ button:active:not(:disabled) {
     flex: 1;
     min-width: 120px;
 }
+
+/* ============================================================
+   以下新增：针对设置界面滚动滑块的优化样式
+   优化设置弹窗内滚动区域（.modal-body）的滚动条外观
+   ============================================================ */
+#settingsModal .modal-body::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+#settingsModal .modal-body::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 8px;
+}
+#settingsModal .modal-body::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+#settingsModal .modal-body::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+}

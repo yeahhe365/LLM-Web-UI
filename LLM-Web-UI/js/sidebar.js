@@ -1,6 +1,6 @@
 // sidebar.js: 管理左侧历史记录
 
-import { switchConversation } from './chat.js';
+import { switchConversation, deleteConversation } from './chat.js';
 
 export function renderHistorySidebar() {
   const historyList = document.getElementById('historyList');
@@ -32,19 +32,12 @@ export function renderHistorySidebar() {
     deleteBtn.setAttribute('aria-label', '删除历史记录');
     deleteBtn.innerHTML = '<span class="material-icons">delete</span>';
 
-    // 点击删除该历史记录
+    // 点击删除该历史记录（调用 chat.js 中的 deleteConversation 来确保全局会话数组被更新）
     deleteBtn.addEventListener('click', (event) => {
       // 避免触发父元素的点击事件（切换会话）
       event.stopPropagation();
-
-      // 重新获取最新的 conversations
-      conversations = JSON.parse(localStorage.getItem('conversations')) || [];
-      const index = conversations.findIndex((c) => c.id === conversation.id);
-      if (index !== -1) {
-        conversations.splice(index, 1);
-        localStorage.setItem('conversations', JSON.stringify(conversations));
-        renderHistorySidebar();
-      }
+      deleteConversation(conversation.id);
+      renderHistorySidebar();
     });
 
     li.appendChild(titleSpan);

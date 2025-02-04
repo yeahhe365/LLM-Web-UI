@@ -1,4 +1,4 @@
-// chat.js: 聊天核心逻辑（已修改支持直接渲染 LaTeX 公式和“停止”功能）
+// chat.js: 聊天核心逻辑（已修改支持直接渲染 LaTeX 公式、“停止”功能以及连续对话时传递完整历史）
 
 import { showToast, copyMessage, deleteMessage, addCopyButtonsToCodeBlocks, escapeHTML } from './utils.js';
 import { renderHistorySidebar } from './sidebar.js';
@@ -85,6 +85,18 @@ function getCurrentConversation() {
   return conversations.find(c => c.id === currentConversationId);
 }
 
+// ★ 新增：格式化会话历史记录，转换为 OpenAI 接口所需的消息数组
+function getFormattedMessages(conversation) {
+  // 将会话中的每条消息转换为 { role, content } 格式
+  // 这里约定：用户消息（author 为 "User"）对应 role "user"，其他消息视为 "assistant"
+  return conversation.messages.map(msg => {
+    return {
+      role: msg.author === "User" ? "user" : "assistant",
+      content: msg.content
+    };
+  });
+}
+
 // ★ 新增：读取当前激活的 API 配置
 function getActiveApiConfig() {
   let apiConfigs = [];
@@ -165,7 +177,7 @@ export async function sendMessage() {
   try {
     let botResponse = '';
     if (apiFormat === 'openai') {
-      // OpenAI 接口调用（添加 signal 参数支持中断）
+      // OpenAI 接口调用，传递整个会话历史（格式化后）以便连续对话时上下文完整
       const response = await fetch(`${apiBaseUrl}/v1/chat/completions`, {
         method: 'POST',
         headers: {
@@ -174,7 +186,7 @@ export async function sendMessage() {
         },
         body: JSON.stringify({
           model: modelId,
-          messages: [{ role: "user", content: message }]
+          messages: getFormattedMessages(conversation)
         }),
         signal: currentAbortController.signal
       });
@@ -184,7 +196,7 @@ export async function sendMessage() {
       const data = await response.json();
       botResponse = data.choices?.[0]?.message?.content || '抱歉，我无法生成回复。';
     } else {
-      // LLM Chat（原 Gemini 格式）接口调用（添加 signal 参数支持中断）
+      // LLM Chat（原 Gemini 格式）接口调用（此处未修改历史传递逻辑，可根据实际 API 要求调整）
       const response = await fetch(
         `${apiBaseUrl}/v1beta/models/${modelId}:generateContent?key=${apiKey}`,
         {
@@ -465,6 +477,25 @@ function removeMessageFromCurrentConversation(author, content) {
   if (idx !== -1) {
     conversation.messages.splice(idx, 1);
     saveConversations();
+  }
+}
+
+// ★ 新增：删除会话（修复新建对话时被删会话重新出现的问题） 
+export function deleteConversation(conversationId) {
+  const index = conversations.findIndex(c => c.id === conversationId);
+  if (index !== -1) {
+    conversations.splice(index, 1);
+    saveConversations();
+    // 如果删除的会话是当前激活的会话，则自动切换到其他会话或新建会话
+    if (currentConversationId === conversationId) {
+      if (conversations.length > 0) {
+        currentConversationId = conversations[0].id;
+        localStorage.setItem('currentConversationId', currentConversationId);
+        renderCurrentConversation();
+      } else {
+        createNewConversation();
+      }
+    }
   }
 }
 
