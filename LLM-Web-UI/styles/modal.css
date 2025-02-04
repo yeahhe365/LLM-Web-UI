@@ -1,0 +1,214 @@
+/* modal.css */
+
+/* 加载中的小圆圈 (Spinner) */
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--button-bg);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 模态框 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--modal-bg);
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.3s;
+    backdrop-filter: blur(5px);
+}
+.modal-content {
+    background-color: var(--input-bg);
+    padding: 2rem;
+    border: none;
+    /* 修改：显式设置所有角的圆角（包括右边缘） */
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    color: var(--text-color);
+    animation: fadeIn 0.3s;
+    position: relative;
+    outline: none;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+/* 可选：为设置界面内部的滚动条拇指添加更圆的边角 */
+.modal-content::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+.close {
+    color: var(--text-color);
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+.modal-body {
+    margin-top: 1rem;
+}
+.settings-section {
+    margin-bottom: 1.5rem;
+}
+.settings-section h3 {
+    margin-bottom: 0.75rem;
+    font-size: 1.2rem;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 0.5rem;
+}
+.setting-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+.setting-item label {
+    flex: 1;
+    font-weight: 500;
+    margin-right: 0.5rem;
+}
+.setting-item select,
+.setting-item input[type="text"] {
+    flex: 2;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    color: #333;
+    transition: border 0.3s;
+}
+.dark-mode .setting-item select,
+.dark-mode .setting-item input[type="text"] {
+    background-color: #1e262e;
+    color: #eeeeee;
+    border: 1px solid #444;
+}
+.setting-item select:focus,
+.setting-item input[type="text"]:focus {
+    border-color: #3f51b5;
+    outline: none;
+}
+.switch {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+.switch input {
+    display: none;
+}
+.switch .slider {
+    position: relative;
+    flex-shrink: 0;
+    width: 50px;
+    height: 24px;
+    background-color: #ccc;
+    border-radius: 34px;
+    transition: .4s;
+    margin-right: 0.5rem;
+}
+.switch .slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+.switch input:checked + .slider {
+    background-color: #3f51b5;
+}
+.switch input:checked + .slider:before {
+    transform: translateX(26px);
+}
+.switch-label {
+    font-size: 1rem;
+}
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+.modal-footer button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s, transform 0.2s;
+}
+.save-button {
+    background-color: #3f51b5;
+    color: white;
+}
+.save-button:hover {
+    background-color: #3949ab;
+}
+.save-button:active {
+    transform: scale(0.95);
+}
+.cancel-button {
+    background-color: #ef5350;
+    color: white;
+}
+.cancel-button:hover {
+    background-color: #d32f2f;
+}
+.cancel-button:active {
+    transform: scale(0.95);
+}
+
+/* Toast 通知 */
+.toast {
+    visibility: hidden;
+    min-width: 200px;
+    background-color: var(--toast-bg);
+    color: var(--toast-text);
+    text-align: center;
+    border-radius: 4px;
+    padding: 0.75rem;
+    position: fixed;
+    z-index: 1100;
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%);
+    font-size: 1rem;
+    opacity: 0;
+    transition: opacity 0.5s, visibility 0.5s;
+}
+.toast.show {
+    visibility: visible;
+    opacity: 1;
+}

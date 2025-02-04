@@ -1,0 +1,98 @@
+/* base.css */
+
+/* 全局样式初始化 */
+*, *::before, *::after {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--bg-color);
+    transition: background-color 0.3s, color 0.3s, font-size 0.3s;
+    font-size: var(--font-size);
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    flex-direction: column;
+    color: var(--text-color);
+}
+
+/* 主题变量 */
+
+/* 明亮模式（默认） */
+:root {
+    --bg-color: #f5f5f6;
+    --text-color: #333;
+    --header-bg: linear-gradient(to right, #3f51b5, #5c6bc0);
+    --button-bg: #3f51b5;
+    --button-hover-bg: #3949ab;
+    --clear-button-bg: #ef5350;
+    --clear-button-hover-bg: #d32f2f;
+    --user-msg-bg: #d3ebfa;
+    --bot-msg-bg: #ffffff;
+    --input-bg: #ffffff;
+    --scrollbar-track: #dedede;
+    --scrollbar-thumb: #aaaaaa;
+    --scrollbar-thumb-hover: #888888;
+    --modal-bg: rgba(0, 0, 0, 0.4);
+    --toast-bg: #333;
+    --toast-text: #fff;
+    --code-copy-bg: rgba(255, 255, 255, 0.8);
+    --code-copy-hover-bg: #fff;
+    --code-copy-color: #555;
+    --font-size: 16px;
+}
+
+/* 暗色模式 */
+.dark-mode {
+    --bg-color: #141b23;
+    --text-color: #eeeeee;
+    --header-bg: linear-gradient(to right, #263238, #455a64);
+    --button-bg: #3f51b5;
+    --button-hover-bg: #3949ab;
+    --clear-button-bg: #ef5350;
+    --clear-button-hover-bg: #d32f2f;
+    --user-msg-bg: #263238;
+    --bot-msg-bg: #1e262e;
+    --input-bg: #1e262e;
+    --scrollbar-track: #1e262e;
+    --scrollbar-thumb: #555;
+    --scrollbar-thumb-hover: #777;
+    --modal-bg: rgba(255, 255, 255, 0.1);
+    --toast-bg: #fff;
+    --toast-text: #333;
+    --code-copy-bg: rgba(0, 0, 0, 0.6);
+    --code-copy-hover-bg: rgba(0, 0, 0, 0.8);
+    --code-copy-color: #eee;
+}
+
+/* 自定义滚动条样式 */
+/* 针对 WebKit 浏览器（Chrome、Safari 等） */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover);
+}
+
+/* 针对 Firefox 浏览器 */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}

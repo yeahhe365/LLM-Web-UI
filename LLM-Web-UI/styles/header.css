@@ -1,0 +1,83 @@
+/* header.css */
+
+/* 顶部栏 */
+header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background: var(--header-bg);
+	color: #fff;
+	padding: 0.75rem 1.5rem;
+	box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+	position: relative;
+	z-index: 10;
+  }
+  header h1 {
+	font-size: 1.8rem;
+	margin: 0;
+  }
+  .header-controls {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+  }
+  
+  /* 侧边栏折叠按钮、设置按钮 */
+  .sidebar-toggle,
+  .settings-button {
+	background-color: transparent;
+	color: #fff;
+	border: 2px solid #fff;
+	border-radius: 50px;
+	padding: 0.5rem 1rem;
+	cursor: pointer;
+	font-size: 1rem;
+	transition: background-color 0.3s, color 0.3s, transform 0.2s;
+	display: flex;
+	align-items: center;
+  }
+  .sidebar-toggle:hover,
+  .settings-button:hover {
+	background-color: rgba(255, 255, 255, 0.2);
+  }
+  .sidebar-toggle:active,
+  .settings-button:active {
+	transform: scale(0.95);
+  }
+  
+  /* 主题切换开关 */
+  .toggle-switch {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	width: auto;
+	height: 34px;
+  }
+  .toggle-switch input {
+	display: none;
+  }
+  .slider {
+	position: relative;
+	width: 50px;
+	height: 24px;
+	background-color: #ccc;
+	border-radius: 34px;
+	transition: .4s;
+  }
+  .slider:before {
+	position: absolute;
+	content: "";
+	height: 18px;
+	width: 18px;
+	left: 3px;
+	bottom: 3px;
+	background-color: white;
+	transition: .4s;
+	border-radius: 50%;
+  }
+  input:checked + .slider {
+	background-color: #2196F3;
+  }
+  input:checked + .slider:before {
+	transform: translateX(26px);
+  }
