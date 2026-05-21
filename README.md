@@ -1,3 +1,8 @@
+> [!IMPORTANT]
+> 维护状态：停止更新
+>
+> 本仓库不再主动维护或发布新功能。现有代码仍可按当前 README 使用，但后续不保证兼容性修复、依赖升级或问题响应。
+
 ![image](https://github.com/user-attachments/assets/4f067fa8-515b-4d1c-8a74-e051e42c56ec)---
 
 # LLM Chat
